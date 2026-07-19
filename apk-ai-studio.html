@@ -3,934 +3,467 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>APK AI Studio — 本地 AI 驱动的 APK 工坊</title>
+<title>APK AI Studio</title>
 <style>
-/* ========== RESET & BASE ========== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0d0d0e;
-  --surface-1:#141416;
-  --surface-2:#1a1a1d;
-  --surface-3:#222228;
-  --border:color-mix(in srgb,#333 70%,#1a1a1d);
-  --text-primary:#e1e1e6;
-  --text-secondary:#88889a;
-  --text-muted:#5c5c6e;
-  --accent:#f0a040;
-  --accent-glow:color-mix(in srgb,var(--accent) 40%,transparent);
-  --danger:#e84a4a;
-  --success:#3db87f;
-  --info:#5b9bd5;
-  --radius-sm:6px;
-  --radius:10px;
-  --radius-lg:16px;
-  --font-mono:'JetBrains Mono','Fira Code','Cascadia Code',monospace;
-  --font-sans:'Plus Jakarta Sans','Inter Display',system-ui,sans-serif;
-  --ease-out: cubic-bezier(0.16,1,0.3,1);
-  --ease-spring: cubic-bezier(0.34,1.56,0.64,1);
+  --bg:#0d0d0e;--s1:#141416;--s2:#1a1a1d;--s3:#222228;
+  --br:color-mix(in srgb,#333 70%,#1a1a1d);
+  --t1:#e1e1e6;--t2:#88889a;--t3:#5c5c6e;
+  --ac:#f0a040;--ag:color-mix(in srgb,var(--ac) 40%,transparent);
+  --er:#e84a4a;--ok:#3db87f;
+  --r:10px;--rs:6px;
 }
-html{font-size:16px;scroll-behavior:smooth}
+html{font-size:16px}
 body{
-  font-family:var(--font-sans);
-  background:var(--bg);
-  color:var(--text-primary);
-  min-height:100dvh;
-  line-height:1.6;
-  -webkit-font-smoothing:antialiased;
+  font-family:system-ui,-apple-system,sans-serif;
+  background:var(--bg);color:var(--t1);
+  min-height:100dvh;line-height:1.5;
   -webkit-tap-highlight-color:transparent;
 }
-::selection{background:var(--accent);color:var(--bg)}
+::selection{background:var(--ac);color:var(--bg)}
 
-/* ========== LAYOUT ========== */
-.app{display:flex;flex-direction:column;min-height:100dvh}
 header{
-  padding:clamp(14px,3vw,22px) clamp(16px,4vw,32px);
-  border-bottom:1px solid var(--border);
-  background:var(--surface-1);
-  backdrop-filter:blur(16px);
-  position:sticky;top:0;z-index:100;
-  display:flex;align-items:center;gap:14px;
+  padding:14px 16px;border-bottom:1px solid var(--br);
+  background:var(--s1);position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;gap:12px;
 }
 .logo{
-  width:36px;height:36px;
-  border-radius:var(--radius-sm);
-  background:var(--accent);
-  display:grid;place-items:center;
-  font-family:var(--font-mono);
-  font-weight:800;font-size:1rem;
-  color:var(--bg);
-  flex-shrink:0;
+  width:34px;height:34px;border-radius:var(--rs);
+  background:var(--ac);display:grid;place-items:center;
+  font-weight:800;font-size:0.9rem;color:var(--bg);flex-shrink:0;
 }
-.header-text{flex:1}
-.header-text h1{font-size:clamp(1rem,2.5vw,1.2rem);font-weight:700;letter-spacing:-0.01em;line-height:1.2}
-.header-text span{font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em}
+header h1{font-size:1rem;font-weight:700;flex:1}
 .status-dot{
-  width:8px;height:8px;border-radius:50%;
-  background:var(--text-muted);
-  flex-shrink:0;
-  transition:background .3s var(--ease-out);
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;
+  background:var(--t3);transition:background .3s;
 }
-.status-dot.ready{background:var(--success);box-shadow:0 0 8px color-mix(in srgb,var(--success) 50%,transparent)}
-.status-dot.busy{background:var(--accent);animation:pulse 1.2s infinite}
+.status-dot.on{background:var(--ok);box-shadow:0 0 8px color-mix(in srgb,var(--ok) 50%,transparent)}
+.status-dot.busy{background:var(--ac);animation:pulse 1.2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
 
-main{
-  flex:1;
-  display:grid;
-  grid-template-columns:1fr;
-  gap:clamp(12px,2vw,20px);
-  padding:clamp(12px,3vw,20px);
-  max-width:1400px;margin:0 auto;width:100%;
-}
-@media(min-width:900px){
-  main{grid-template-columns:1fr 1fr}
-  .panel-full{grid-column:1/-1}
-}
-@media(min-width:1200px){
-  main{grid-template-columns:360px 1fr 1fr}
-  .panel-full{grid-column:1/-1}
-}
+main{padding:12px;max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
 
-/* ========== PANELS ========== */
 .panel{
-  background:var(--surface-1);
-  border:1px solid var(--border);
-  border-radius:var(--radius-lg);
-  overflow:hidden;
-  display:flex;flex-direction:column;
-  transition:border-color .25s var(--ease-out);
+  background:var(--s1);border:1px solid var(--br);
+  border-radius:var(--r);overflow:hidden;
 }
-.panel:focus-within{border-color:color-mix(in srgb,var(--accent) 40%,var(--border))}
-.panel-header{
-  padding:14px 18px;
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:10px;
-  font-size:0.8rem;font-weight:600;letter-spacing:0.02em;
-  color:var(--text-secondary);text-transform:uppercase;
-  background:var(--surface-2);
-}
-.panel-header .icon{font-size:1rem;opacity:0.7}
-.panel-body{
-  flex:1;padding:16px;
-  overflow-y:auto;
-  display:flex;flex-direction:column;gap:12px;
-  max-height:clamp(300px,50vh,600px);
-}
-
-/* ========== FORM ELEMENTS ========== */
-input,textarea,select,button{
-  font-family:inherit;font-size:0.85rem;
-  border-radius:var(--radius-sm);
-  transition:all .2s var(--ease-out);
-}
-input[type="text"],input[type="url"],input[type="password"],textarea,select{
-  width:100%;
-  padding:10px 14px;
-  background:var(--surface-3);
-  border:1px solid var(--border);
-  color:var(--text-primary);
-  resize:vertical;
-}
-input:focus,textarea:focus,select:focus{
-  outline:none;
-  border-color:var(--accent);
-  box-shadow:0 0 0 3px var(--accent-glow);
-}
-textarea{min-height:80px;font-family:var(--font-mono);font-size:0.8rem}
-label{
+.panel-hd{
+  padding:10px 14px;border-bottom:1px solid var(--br);
   font-size:0.72rem;font-weight:600;text-transform:uppercase;
-  letter-spacing:0.05em;color:var(--text-muted);
-  display:block;margin-bottom:4px;
+  letter-spacing:0.04em;color:var(--t2);background:var(--s2);
+  display:flex;align-items:center;gap:8px;
 }
+.panel-bd{padding:12px;display:flex;flex-direction:column;gap:10px}
+
+input,textarea,select,button{font-family:inherit;font-size:0.85rem;border-radius:var(--rs)}
+input[type="text"],input[type="url"],input[type="password"],textarea{
+  width:100%;padding:9px 12px;background:var(--s3);
+  border:1px solid var(--br);color:var(--t1);
+}
+input:focus,textarea:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px var(--ag)}
+textarea{min-height:90px;font-family:'SF Mono','Fira Code',monospace;font-size:0.78rem}
+label{font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--t3);display:block;margin-bottom:3px}
 
 .btn{
   display:inline-flex;align-items:center;gap:6px;
-  padding:10px 18px;
-  font-weight:600;font-size:0.8rem;
-  letter-spacing:0.02em;
-  border:none;cursor:pointer;
-  border-radius:var(--radius-sm);
-  transition:all .2s var(--ease-out);
-  white-space:nowrap;
-  user-select:none;
-  -webkit-user-select:none;
+  padding:9px 16px;font-weight:600;font-size:0.78rem;
+  letter-spacing:0.02em;border:none;cursor:pointer;
+  border-radius:var(--rs);transition:all .2s;white-space:nowrap;
+  user-select:none;-webkit-user-select:none;
 }
 .btn:active{transform:scale(0.97)}
-.btn-primary{
-  background:var(--accent);color:var(--bg);
-  box-shadow:0 2px 12px var(--accent-glow);
-}
-.btn-primary:hover{filter:brightness(1.1)}
-.btn-ghost{
-  background:transparent;color:var(--text-secondary);
-  border:1px solid var(--border);
-}
-.btn-ghost:hover{background:var(--surface-3);color:var(--text-primary)}
-.btn-danger{background:var(--danger);color:#fff}
-.btn-danger:hover{filter:brightness(1.15)}
-.btn-sm{padding:6px 12px;font-size:0.72rem}
-.btn:disabled{opacity:0.4;cursor:not-allowed;pointer-events:none}
-.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.btn-p{background:var(--ac);color:var(--bg);box-shadow:0 2px 10px var(--ag)}
+.btn-g{background:transparent;color:var(--t2);border:1px solid var(--br)}
+.btn-g:hover{background:var(--s3);color:var(--t1)}
+.btn-sm{padding:5px 10px;font-size:0.7rem}
+.btn:disabled{opacity:0.35;pointer-events:none}
+.btn-row{display:flex;gap:6px;flex-wrap:wrap}
 
-/* ========== FILE DROP ZONE ========== */
 .drop-zone{
-  border:2px dashed var(--border);
-  border-radius:var(--radius);
-  padding:clamp(24px,6vw,40px);
-  text-align:center;
-  cursor:pointer;
-  transition:all .25s var(--ease-out);
-  background:var(--surface-2);
+  border:2px dashed var(--br);border-radius:var(--r);
+  padding:20px;text-align:center;cursor:pointer;
+  background:var(--s2);transition:all .2s;
 }
-.drop-zone.drag-over{
-  border-color:var(--accent);
-  background:color-mix(in srgb,var(--accent) 8%,var(--surface-2));
-  box-shadow:inset 0 0 40px var(--accent-glow);
-}
-.drop-zone .dz-icon{font-size:2.5rem;margin-bottom:8px;opacity:0.6}
-.drop-zone .dz-text{font-size:0.85rem;color:var(--text-secondary)}
-.drop-zone .dz-hint{font-size:0.7rem;color:var(--text-muted);margin-top:4px}
+.drop-zone:active,.drop-zone.drag{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 8%,var(--s2))}
 .drop-zone input[type="file"]{display:none}
+.dz-icon{font-size:2rem;margin-bottom:4px;opacity:0.5}
+.dz-text{font-size:0.82rem;color:var(--t2)}
+.dz-hint{font-size:0.68rem;color:var(--t3);margin-top:2px}
 
-/* ========== PROGRESS ========== */
-.progress-bar{
-  height:4px;background:var(--surface-3);border-radius:2px;overflow:hidden;
-}
-.progress-bar .fill{
-  height:100%;
-  background:var(--accent);
-  border-radius:2px;
-  width:0%;
-  transition:width .3s var(--ease-out);
-}
-.progress-label{
-  font-size:0.7rem;color:var(--text-muted);
-  display:flex;justify-content:space-between;
-}
+.chat-log{max-height:40vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.chat-msg{max-width:88%;padding:8px 12px;border-radius:var(--r);font-size:0.8rem;line-height:1.5;animation:fadeUp .3s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.chat-msg.user{align-self:flex-end;background:var(--ac);color:var(--bg);border-bottom-right-radius:3px}
+.chat-msg.assistant{align-self:flex-start;background:var(--s2);border:1px solid var(--br);border-bottom-left-radius:3px}
+.chat-msg.system{align-self:center;background:transparent;color:var(--t3);font-size:0.68rem;text-align:center}
+.chat-row{display:flex;gap:8px}
+.chat-row input{flex:1}
 
-/* ========== FILE TREE ========== */
-.file-tree{
-  font-family:var(--font-mono);font-size:0.75rem;line-height:1.8;
-  list-style:none;
-}
-.file-tree li{padding:2px 6px;border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:6px}
-.file-tree li:hover{background:var(--surface-3)}
-.file-tree li.selected{background:var(--accent-glow);color:var(--accent)}
-.file-tree .ft-icon{font-size:0.85rem;width:18px;text-align:center;flex-shrink:0}
-.file-tree .ft-dir{color:var(--info)}
-.file-tree .ft-file{color:var(--text-secondary)}
-.file-tree .ft-size{font-size:0.65rem;color:var(--text-muted);margin-left:auto}
+.file-tree{font-family:'SF Mono','Fira Code',monospace;font-size:0.72rem;line-height:1.7;list-style:none;max-height:250px;overflow-y:auto}
+.file-tree li{padding:1px 6px;border-radius:3px;cursor:pointer;display:flex;align-items:center;gap:5px}
+.file-tree li:hover{background:var(--s3)}
+.file-tree li.sel{background:var(--ag);color:var(--ac)}
+.file-tree .fi{font-size:0.8rem;width:16px;text-align:center;flex-shrink:0}
+.file-tree .fd{color:var(--ac)}
+.file-tree .ff{color:var(--t2)}
+.file-tree .fs{font-size:0.62rem;color:var(--t3);margin-left:auto}
 
-/* ========== CHAT ========== */
-.chat-log{
-  flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;
-  padding-right:4px;
-}
-.chat-msg{
-  max-width:90%;padding:10px 14px;border-radius:var(--radius);
-  font-size:0.82rem;line-height:1.5;
-  animation:fadeUp .3s var(--ease-out);
-}
-@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.chat-msg.user{
-  align-self:flex-end;
-  background:var(--accent);color:var(--bg);
-  border-bottom-right-radius:4px;
-}
-.chat-msg.assistant{
-  align-self:flex-start;
-  background:var(--surface-2);
-  border-bottom-left-radius:4px;
-  border:1px solid var(--border);
-}
-.chat-msg.system{
-  align-self:center;
-  background:transparent;color:var(--text-muted);
-  font-size:0.7rem;text-align:center;max-width:100%;
-}
-.chat-input-row{display:flex;gap:8px;margin-top:8px}
-.chat-input-row input{flex:1}
+.result{font-size:0.76rem;padding:10px 12px;border-radius:var(--rs);background:var(--s2);border:1px solid var(--br)}
+.result.ok{border-color:var(--ok)}
+.result.err{border-color:var(--er);color:var(--er)}
 
-/* ========== GITHUB SECTION ========== */
-.gh-result{
-  font-size:0.78rem;padding:10px 14px;border-radius:var(--radius-sm);
-  background:var(--surface-2);border:1px solid var(--border);
-}
-.gh-result.success{border-color:var(--success)}
-.gh-result.error{border-color:var(--danger);color:var(--danger)}
+details summary{font-size:0.7rem;color:var(--t3);cursor:pointer;padding:4px 0}
+hr{border:none;border-top:1px solid var(--br);margin:4px 0}
 
-/* ========== TOAST ========== */
-.toast-container{
-  position:fixed;bottom:20px;right:20px;
-  z-index:999;display:flex;flex-direction:column;gap:8px;
-  pointer-events:none;
-}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--t3);border-top-color:var(--ac);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.toast-ctr{position:fixed;bottom:16px;right:16px;z-index:999;display:flex;flex-direction:column;gap:6px;pointer-events:none}
 .toast{
-  background:var(--surface-2);border:1px solid var(--border);
-  padding:12px 18px;border-radius:var(--radius);
-  font-size:0.8rem;box-shadow:0 8px 32px rgba(0,0,0,.4);
-  animation:slideIn .35s var(--ease-spring);
-  pointer-events:auto;
-  max-width:320px;
+  background:var(--s2);border:1px solid var(--br);padding:10px 16px;
+  border-radius:var(--r);font-size:0.76rem;box-shadow:0 6px 24px rgba(0,0,0,.5);
+  animation:slideIn .3s cubic-bezier(0.34,1.56,0.64,1);pointer-events:auto;max-width:280px
 }
-.toast.success{border-color:var(--success)}
-.toast.error{border-color:var(--danger)}
-@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
-
-/* ========== SCROLLBAR ========== */
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
-::-webkit-scrollbar-thumb:hover{background:var(--text-muted)}
-
-/* ========== RESPONSIVE ========== */
-@media(max-width:600px){
-  .panel-body{padding:10px;gap:8px}
-  .chat-msg{max-width:95%}
-  .btn{font-size:0.75rem;padding:8px 14px}
-}
+.toast.ok{border-color:var(--ok)}.toast.err{border-color:var(--er)}
+@keyframes slideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
 </style>
 </head>
 <body>
 
-<!-- COI ServiceWorker 内嵌，解决 SharedArrayBuffer 跨域隔离问题 -->
-<script>
-(function(){
-  if(typeof window==='undefined'||typeof document==='undefined')return;
-  if(window.crossOriginIsolated)return;
-  const swCode=`
-self.addEventListener('install',()=>self.skipWaiting());
-self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
-self.addEventListener('fetch',e=>{
-  if(!e.request.url.startsWith(self.location.origin))return;
-  e.respondWith((async()=>{
-    const r=await fetch(e.request);
-    const h=new Headers(r.headers);
-    h.set('Cross-Origin-Embedder-Policy','require-corp');
-    h.set('Cross-Origin-Opener-Policy','same-origin');
-    return new Response(r.body,{status:r.status,statusText:r.statusText,headers:h});
-  })());
-});
-`;
-  const blob=new Blob([swCode],{type:'application/javascript'});
-  const blobUrl=URL.createObjectURL(blob);
-  navigator.serviceWorker.register(blobUrl,{scope:'/'}).then(()=>{
-    if(!window.crossOriginIsolated){
-      setTimeout(()=>location.reload(),200);
-    }
-  }).catch(()=>{});
-})();
-</script>
+<div class="toast-ctr" id="toasts"></div>
 
-<div class="app">
-  <header>
-    <div class="logo">APK</div>
-    <div class="header-text">
-      <h1>APK AI Studio</h1>
-      <span>本地 AI · APK 工坊 · GitHub 同步</span>
-    </div>
-    <div class="status-dot" id="statusDot" title="模型状态"></div>
-  </header>
+<header>
+  <div class="logo">APK</div>
+  <h1>APK AI Studio</h1>
+  <div class="status-dot" id="dot" title="API 状态"></div>
+</header>
 
-  <main>
-    <!-- ========== 左侧：模型 & APK 文件面板 ========== -->
-    <div class="panel" id="panelModel">
-      <div class="panel-header"><span class="icon">🧠</span> 模型 & 文件</div>
-      <div class="panel-body" id="panelModelBody">
-        <!-- 模型加载区 -->
-        <div>
-          <label>GGUF 模型文件</label>
-          <div class="drop-zone" id="dropModel" style="padding:18px">
-            <div class="dz-icon">📦</div>
-            <div class="dz-text">拖入 .gguf 模型或点击选择</div>
-            <div class="dz-hint">支持 llama / gemma / qwen / phi 等</div>
-            <input type="file" id="modelFileInput" accept=".gguf">
-          </div>
+<main>
+  <!-- API 连接 -->
+  <div class="panel" id="pnlApi">
+    <div class="panel-hd">🔌 AI 模型连接</div>
+    <div class="panel-bd">
+      <div>
+        <label>llama.cpp Server 地址</label>
+        <div style="display:flex;gap:6px">
+          <input type="text" id="apiUrl" placeholder="http://192.168.1.x:8080/v1" value="" style="flex:1">
+          <button class="btn btn-p btn-sm" onclick="connectAPI()" id="btnConnect">连接</button>
         </div>
-        <div id="modelProgress" style="display:none">
-          <div class="progress-label"><span id="modelProgressLabel">加载中...</span><span id="modelProgressPct">0%</span></div>
-          <div class="progress-bar"><div class="fill" id="modelProgressFill"></div></div>
-        </div>
-
-        <!-- 备用：本地 API 模式 -->
-        <details style="margin-top:8px">
-          <summary style="font-size:0.72rem;color:var(--text-muted);cursor:pointer">或连接本地 llama.cpp Server</summary>
-          <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">
-            <input type="text" id="apiBaseUrl" placeholder="http://localhost:8080/v1" value="http://localhost:8080/v1">
-            <button class="btn btn-ghost btn-sm" onclick="connectLocalAPI()">连接 API</button>
-          </div>
-        </details>
-
-        <hr style="border-color:var(--border);margin:8px 0">
-
-        <!-- APK 文件 -->
-        <div>
-          <label>APK 文件</label>
-          <div class="drop-zone" id="dropApk" style="padding:18px">
-            <div class="dz-icon">📱</div>
-            <div class="dz-text" id="apkDropText">拖入 .apk 文件或点击选择</div>
-            <div class="dz-hint" id="apkDropHint"></div>
-            <input type="file" id="apkFileInput" accept=".apk,.xapk,.apks">
-          </div>
-        </div>
-        <div style="font-size:0.68rem;color:var(--text-muted)" id="apkInfo"></div>
-      </div>
-    </div>
-
-    <!-- ========== 中间：AI 对话面板 ========== -->
-    <div class="panel" id="panelChat">
-      <div class="panel-header"><span class="icon">💬</span> AI 对话</div>
-      <div class="panel-body" id="chatBody" style="max-height:clamp(300px,55vh,700px)">
-        <div class="chat-log" id="chatLog">
-          <div class="chat-msg system">
-            👋 拖入 .gguf 模型文件启动本地 AI，或连接 API。<br>
-            加载后可直接对话，AI 将辅助分析/修改 APK。
-          </div>
-        </div>
-        <div class="chat-input-row">
-          <input type="text" id="chatInput" placeholder="输入消息..." disabled>
-          <button class="btn btn-primary btn-sm" id="chatSend" disabled onclick="sendChat()">发送</button>
+        <div style="font-size:0.65rem;color:var(--t3);margin-top:4px">
+          电脑端运行 <code>llama-server -m model.gguf --host 0.0.0.0</code>，手机连同一 Wi-Fi 填入电脑 IP
         </div>
       </div>
+      <div id="apiStatus" style="font-size:0.72rem;color:var(--t3)"></div>
     </div>
+  </div>
 
-    <!-- ========== 右侧：APK 浏览器 & GitHub ========== -->
-    <div class="panel" id="panelFiles">
-      <div class="panel-header"><span class="icon">📂</span> APK 内容</div>
-      <div class="panel-body" id="fileTreeBody" style="overflow-y:auto;max-height:clamp(200px,35vh,400px)">
-        <div style="font-size:0.75rem;color:var(--text-muted);text-align:center;padding:20px">
-          加载 APK 后在此显示文件结构
-        </div>
+  <!-- APK 文件 -->
+  <div class="panel" id="pnlApk">
+    <div class="panel-hd">📱 APK 文件</div>
+    <div class="panel-bd">
+      <div class="drop-zone" id="dropApk">
+        <div class="dz-icon">📦</div>
+        <div class="dz-text" id="apkText">点击或拖入 .apk 文件</div>
+        <div class="dz-hint" id="apkHint"></div>
+        <input type="file" id="apkInput" accept=".apk,.xapk,.apks,.zip">
+      </div>
+      <div id="apkInfo" style="font-size:0.7rem;color:var(--t3)"></div>
+    </div>
+  </div>
+
+  <!-- AI 对话 -->
+  <div class="panel" id="pnlChat">
+    <div class="panel-hd">💬 AI 对话</div>
+    <div class="panel-bd">
+      <div class="chat-log" id="chatLog">
+        <div class="chat-msg system">连接 API 后可对话，AI 将辅助分析/修改 APK</div>
+      </div>
+      <div class="chat-row">
+        <input type="text" id="chatInput" placeholder="输入消息..." disabled>
+        <button class="btn btn-p btn-sm" id="chatSend" disabled onclick="send()">发送</button>
       </div>
     </div>
+  </div>
 
-    <!-- ========== 文件编辑面板 ========== -->
-    <div class="panel panel-full" id="panelEditor" style="display:none">
-      <div class="panel-header">
-        <span class="icon">✏️</span>
-        <span id="editorFileName">文件编辑</span>
-        <span style="margin-left:auto;font-size:0.68rem;color:var(--text-muted)" id="editorFileSize"></span>
-      </div>
-      <div class="panel-body">
-        <textarea id="fileEditor" style="min-height:200px;font-family:var(--font-mono);font-size:0.75rem" placeholder="选择文件进行编辑..."></textarea>
-        <div class="btn-row">
-          <button class="btn btn-primary btn-sm" onclick="saveEditedFile()">💾 保存修改</button>
-          <button class="btn btn-ghost btn-sm" onclick="closeEditor()">关闭</button>
-        </div>
+  <!-- APK 内容 -->
+  <div class="panel" id="pnlFiles">
+    <div class="panel-hd">📂 APK 内容 — <span id="fileCount" style="font-weight:400;text-transform:none">未加载</span></div>
+    <div class="panel-bd">
+      <ul class="file-tree" id="fileTree"><li style="color:var(--t3);padding:8px">加载 APK 后显示文件结构</li></ul>
+    </div>
+  </div>
+
+  <!-- 文件编辑器 -->
+  <div class="panel" id="pnlEdit" style="display:none">
+    <div class="panel-hd">✏️ <span id="editName"></span> <span style="margin-left:auto;font-weight:400;text-transform:none;font-size:0.68rem" id="editSize"></span></div>
+    <div class="panel-bd">
+      <textarea id="editor" placeholder="选择文件进行编辑..."></textarea>
+      <div class="btn-row">
+        <button class="btn btn-p btn-sm" onclick="saveEdit()">保存修改</button>
+        <button class="btn btn-g btn-sm" onclick="closeEdit()">关闭</button>
       </div>
     </div>
+  </div>
 
-    <!-- ========== GitHub 上传面板 ========== -->
-    <div class="panel panel-full" id="panelGitHub">
-      <div class="panel-header"><span class="icon">🚀</span> GitHub 上传</div>
-      <div class="panel-body">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div>
-            <label>仓库 (owner/repo)</label>
-            <input type="text" id="ghRepo" placeholder="username/repo-name">
-          </div>
-          <div>
-            <label>分支</label>
-            <input type="text" id="ghBranch" value="main" placeholder="main">
-          </div>
-        </div>
-        <div>
-          <label>Token <span style="color:var(--danger);font-size:0.65rem">⚠ 已在对话中暴露，建议使用后立即 revoke</span></label>
-          <input type="password" id="ghToken" value="" placeholder="ghp_xxx...（在此粘贴你的 GitHub Token）">
-        </div>
-        <div>
-          <label>目标路径（仓库内）</label>
-          <input type="text" id="ghPath" placeholder="builds/app-modified.apk" value="builds/app-modified.apk">
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-primary" id="btnUploadGitHub" onclick="uploadToGitHub()" disabled>
-            ⬆ 上传修改后的 APK 到 GitHub
-          </button>
-          <button class="btn btn-ghost btn-sm" id="btnDownloadApk" onclick="downloadModifiedApk()" disabled>
-            📥 下载修改后的 APK
-          </button>
-          <span style="font-size:0.7rem;color:var(--text-muted)">或先下载再手动上传</span>
-        </div>
-        <div id="ghResult"></div>
+  <!-- GitHub & 导出 -->
+  <div class="panel">
+    <div class="panel-hd">🚀 导出 & GitHub</div>
+    <div class="panel-bd">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div><label>仓库</label><input type="text" id="ghRepo" placeholder="username/repo"></div>
+        <div><label>分支</label><input type="text" id="ghBranch" value="main"></div>
       </div>
+      <div><label>Token</label><input type="password" id="ghToken" placeholder="ghp_xxx..."></div>
+      <div><label>目标路径</label><input type="text" id="ghPath" value="builds/modified.apk"></div>
+      <div class="btn-row">
+        <button class="btn btn-p btn-sm" id="btnGH" disabled onclick="uploadGH()">上传到 GitHub</button>
+        <button class="btn btn-g btn-sm" id="btnDL" disabled onclick="downloadApk()">下载修改后的 APK</button>
+      </div>
+      <div id="ghResult"></div>
     </div>
-  </main>
-
-  <div class="toast-container" id="toastContainer"></div>
-</div>
+  </div>
+</main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script type="module">
-// ==================== WLLAMA 动态加载 ====================
-let Wllama=null;
-let wllamaInstance=null;
-let modelLoaded=false;
-let modelLoading=false;
-
-async function ensureWllama(){
-  if(Wllama)return Wllama;
-  try{
-    const mod=await import('https://esm.sh/@wllama/wllama@2.0.3');
-    Wllama=mod.Wllama;
-    return Wllama;
-  }catch(e){
-    console.error('wllama 加载失败:',e);
-    return null;
-  }
-}
-
-// ==================== 状态管理 ====================
-const state={
-  apkZip:null,           // JSZip 实例
-  apkFiles:[],           // APK 内文件列表 [{name,dir,size,data}]
-  apkModified:{},        // 被修改的文件 {filename: newData(Uint8Array)}
-  apkDeleted:new Set(),  // 被删除的文件
-  selectedFile:null,     // 当前选中的文件
-  modifiedApkBlob:null,  // 修改后重新打包的 APK blob
-  chatHistory:[],        // AI 对话历史
-  useLocalAPI:false,     // 是否使用本地 API 模式
-  apiBaseUrl:'http://localhost:8080/v1',
+<script>
+// ==================== 状态 ====================
+const S={
+  apiBase:'',apiConnected:false,
+  apkZip:null,apkFiles:[],apkMod:{},apkDel:new Set(),
+  selFile:null,modBlob:null,
 };
 
-// ==================== DOM 引用 ====================
 const $=id=>document.getElementById(id);
-const dom={
-  statusDot:$('statusDot'),
-  dropModel:$('dropModel'),modelFileInput:$('modelFileInput'),
-  modelProgress:$('modelProgress'),modelProgressFill:$('modelProgressFill'),
-  modelProgressLabel:$('modelProgressLabel'),modelProgressPct:$('modelProgressPct'),
-  dropApk:$('dropApk'),apkFileInput:$('apkFileInput'),
-  apkDropText:$('apkDropText'),apkDropHint:$('apkDropHint'),apkInfo:$('apkInfo'),
-  chatLog:$('chatLog'),chatInput:$('chatInput'),chatSend:$('chatSend'),chatBody:$('chatBody'),
-  fileTreeBody:$('fileTreeBody'),
-  panelEditor:$('panelEditor'),editorFileName:$('editorFileName'),
-  editorFileSize:$('editorFileSize'),fileEditor:$('fileEditor'),
-  ghRepo:$('ghRepo'),ghBranch:$('ghBranch'),ghToken:$('ghToken'),
-  ghPath:$('ghPath'),ghResult:$('ghResult'),
-  btnUploadGitHub:$('btnUploadGitHub'),btnDownloadApk:$('btnDownloadApk'),
-  apiBaseUrl:$('apiBaseUrl'),
-  toastContainer:$('toastContainer'),
+const D={
+  dot:$('dot'),apiUrl:$('apiUrl'),apiStatus:$('apiStatus'),btnConnect:$('btnConnect'),
+  dropApk:$('dropApk'),apkInput:$('apkInput'),apkText:$('apkText'),apkHint:$('apkHint'),apkInfo:$('apkInfo'),
+  chatLog:$('chatLog'),chatInput:$('chatInput'),chatSend:$('chatSend'),
+  fileCount:$('fileCount'),fileTree:$('fileTree'),
+  pnlEdit:$('pnlEdit'),editName:$('editName'),editSize:$('editSize'),editor:$('editor'),
+  ghRepo:$('ghRepo'),ghBranch:$('ghBranch'),ghToken:$('ghToken'),ghPath:$('ghPath'),
+  btnGH:$('btnGH'),btnDL:$('btnDL'),ghResult:$('ghResult'),
+  toasts:$('toasts'),
 };
 
-// ==================== TOAST ====================
-function toast(msg,type=''){
-  const el=document.createElement('div');
-  el.className=`toast ${type}`;
-  el.textContent=msg;
-  dom.toastContainer.appendChild(el);
-  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300)},3000);
-}
+// ==================== Toast ====================
+function toast(m,t){const e=document.createElement('div');e.className='toast'+(t?' '+t:'');e.textContent=m;D.toasts.appendChild(e);setTimeout(()=>{e.style.opacity='0';e.style.transition='opacity .3s';setTimeout(()=>e.remove(),300)},2800)}
 
-// ==================== 模型加载 ====================
-async function loadGGUFModel(file){
-  if(modelLoading||modelLoaded){toast('模型已加载或正在加载中');return;}
-  modelLoading=true;
-  dom.statusDot.className='status-dot busy';
-  dom.modelProgress.style.display='block';
-  dom.modelProgressLabel.textContent='正在加载模型...';
-  dom.modelProgressPct.textContent='0%';
-  dom.modelProgressFill.style.width='0%';
-
-  const W=await ensureWllama();
-  if(!W){toast('无法加载 wllama，请检查网络','error');modelLoading=false;dom.statusDot.className='status-dot';return;}
-
+// ==================== API 连接 ====================
+async function connectAPI(){
+  const url=D.apiUrl.value.trim();
+  if(!url){toast('请输入 API 地址','err');return}
+  D.btnConnect.disabled=true;D.btnConnect.textContent='连接中...';
+  D.dot.className='status-dot busy';
   try{
-    const config={
-      'n_threads': navigator.hardwareConcurrency||4,
-      onModelLoaded:()=>{
-        dom.modelProgressLabel.textContent='模型已加载';
-        dom.modelProgressPct.textContent='100%';
-        dom.modelProgressFill.style.width='100%';
-      },
-      onInference:(progress)=>{
-        dom.modelProgressLabel.textContent='推理中...';
-        dom.modelProgressPct.textContent=Math.round(progress*100)+'%';
-        dom.modelProgressFill.style.width=(progress*100)+'%';
-      },
-    };
-    wllamaInstance=new W(config);
-    const objectUrl=URL.createObjectURL(file);
-    await wllamaInstance.loadModelFromUrl(objectUrl);
-    URL.revokeObjectURL(objectUrl);
-
-    modelLoaded=true;
-    modelLoading=false;
-    dom.statusDot.className='status-dot ready';
-    dom.chatInput.disabled=false;
-    dom.chatSend.disabled=false;
-    dom.modelProgress.style.display='none';
-    updateDropZoneText();
-    toast('模型加载成功，可以开始对话','success');
+    const r=await fetch(url.replace(/\/+$/,'')+'/models',{signal:AbortSignal.timeout(5000)});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    S.apiBase=url.replace(/\/+$/,'');
+    S.apiConnected=true;
+    D.dot.className='status-dot on';
+    D.apiStatus.innerHTML='<span style="color:var(--ok)">已连接</span> — '+((d.data||[]).map(m=>m.id).join(', ')||'模型就绪');
+    D.chatInput.disabled=false;D.chatSend.disabled=false;
+    D.btnConnect.textContent='已连接';D.btnConnect.className='btn btn-g btn-sm';
+    toast('API 连接成功','ok');
   }catch(e){
-    console.error(e);
-    modelLoading=false;
-    dom.statusDot.className='status-dot';
-    dom.modelProgress.style.display='none';
-    toast('模型加载失败: '+e.message,'error');
+    D.dot.className='status-dot';
+    D.btnConnect.disabled=false;D.btnConnect.textContent='连接';
+    D.apiStatus.innerHTML='<span style="color:var(--er)">连接失败</span>: '+e.message;
+    toast('连接失败: '+e.message,'err');
   }
 }
-
-function updateDropZoneText(){
-  if(modelLoaded){
-    dom.dropModel.querySelector('.dz-text').textContent='模型已加载 ✅';
-    dom.dropModel.querySelector('.dz-hint').textContent='拖入新模型可替换';
-  }
-}
-
-// ==================== 本地 API 模式 ====================
-window.connectLocalAPI=function(){
-  const url=dom.apiBaseUrl.value.trim();
-  if(!url){toast('请输入 API 地址','error');return;}
-  state.useLocalAPI=true;
-  state.apiBaseUrl=url;
-  modelLoaded=true;
-  dom.statusDot.className='status-dot ready';
-  dom.chatInput.disabled=false;
-  dom.chatSend.disabled=false;
-  dom.modelProgress.style.display='none';
-  dom.dropModel.querySelector('.dz-text').textContent='API 模式已激活';
-  dom.dropModel.querySelector('.dz-hint').textContent=url;
-  toast('已连接到本地 API: '+url,'success');
-};
+window.connectAPI=connectAPI;
 
 // ==================== APK 处理 ====================
 async function loadAPK(file){
   try{
     const buf=await file.arrayBuffer();
     const zip=await JSZip.loadAsync(buf);
-    state.apkZip=zip;
-    state.apkFiles=[];
-    state.apkModified={};
-    state.apkDeleted=new Set();
-    state.selectedFile=null;
-    state.modifiedApkBlob=null;
+    S.apkZip=zip;S.apkFiles=[];S.apkMod={};S.apkDel=new Set();S.selFile=null;S.modBlob=null;
 
-    const promises=[];
-    zip.forEach((relativePath,f)=>{
-      const isDir=f.dir;
-      promises.push((async()=>{
-        let data=null;
-        let size=f._data?.uncompressedSize||0;
-        if(!isDir){
-          data=await f.async('uint8array');
-          size=data.length;
-        }
-        state.apkFiles.push({
-          name:relativePath,
-          dir:isDir,
-          size:size,
-          data:data,
-        });
+    const ps=[];
+    zip.forEach((p,f)=>{
+      ps.push((async()=>{
+        let d=null,sz=f._data?.uncompressedSize||0;
+        if(!f.dir){d=await f.async('uint8array');sz=d.length}
+        S.apkFiles.push({name:p,dir:f.dir,size:sz,data:d});
       })());
     });
-    await Promise.all(promises);
-    state.apkFiles.sort((a,b)=>{
-      if(a.dir!==b.dir)return a.dir?-1:1;
-      return a.name.localeCompare(b.name);
-    });
+    await Promise.all(ps);
+    S.apkFiles.sort((a,b)=>a.dir!==b.dir?(a.dir?-1:1):a.name.localeCompare(b.name));
 
-    dom.apkDropText.textContent=file.name;
-    dom.apkDropHint.textContent=`${(file.size/1024/1024).toFixed(1)} MB · ${state.apkFiles.length} 个文件`;
-    dom.apkInfo.textContent=`已加载: ${file.name} | ${state.apkFiles.filter(f=>!f.dir).length} 文件, ${state.apkFiles.filter(f=>f.dir).length} 目录`;
-    dom.btnUploadGitHub.disabled=true;
-    dom.btnDownloadApk.disabled=true;
-    state.modifiedApkBlob=null;
+    D.apkText.textContent=file.name;
+    D.apkHint.textContent=(file.size/1024/1024).toFixed(1)+' MB · '+S.apkFiles.length+' 项';
+    D.apkInfo.textContent='已加载: '+S.apkFiles.filter(f=>!f.dir).length+' 文件, '+S.apkFiles.filter(f=>f.dir).length+' 目录';
+    D.fileCount.textContent=S.apkFiles.filter(f=>!f.dir).length+' 文件';
+    D.btnGH.disabled=true;D.btnDL.disabled=true;
+    renderTree();
+    toast('APK 加载成功','ok');
+  }catch(e){toast('加载失败: '+e.message,'err')}
+}
 
-    renderFileTree();
-    toast('APK 加载成功','success');
-  }catch(e){
-    toast('APK 加载失败: '+e.message,'error');
+function renderTree(){
+  let h='';
+  for(const f of S.apkFiles){
+    const d=f.name.split('/').length-1;
+    const dn=f.name.split('/').pop()||f.name;
+    const sel=S.selFile&&S.selFile.name===f.name;
+    const ic=f.dir?'📁':'📄';
+    const cl=f.dir?'fd':'ff';
+    const mod=S.apkMod[f.name]?' ✏️':'';
+    const del=S.apkDel.has(f.name)?' 🗑':'';
+    const sz=f.dir?'':fmtSize(f.size);
+    h+=`<li class="${sel?'sel':''}" style="padding-left:${8+d*14}px" onclick="sel('${esc(f.name)}')"><span class="fi ${cl}">${ic}</span>${dn}${mod}${del}${sz?`<span class="fs">${sz}</span>`:''}</li>`;
   }
+  D.fileTree.innerHTML=h?'<ul class="file-tree" style="list-style:none;margin:0;padding:0">'+h+'</ul>':'<li style="color:var(--t3);padding:8px">空</li>';
 }
-
-function renderFileTree(){
-  const files=state.apkFiles;
-  let html='<ul class="file-tree">';
-  for(const f of files){
-    const indent=f.name.split('/').length-1;
-    const displayName=f.name.split('/').pop()||f.name;
-    const isSelected=state.selectedFile&&state.selectedFile.name===f.name;
-    const cls=f.dir?'ft-dir':'ft-file';
-    const icon=f.dir?'📁':'📄';
-    const sizeStr=f.dir?'':formatSize(f.size);
-    const modified=state.apkModified[f.name]?' ✏️':'';
-    const deleted=state.apkDeleted.has(f.name)?' 🗑':'';
-    html+=`<li class="${isSelected?'selected':''}" style="padding-left:${10+indent*16}px" onclick="selectFile('${escapeHtml(f.name)}')">
-      <span class="ft-icon ${cls}">${icon}</span>
-      <span>${displayName}${modified}${deleted}</span>
-      ${sizeStr?`<span class="ft-size">${sizeStr}</span>`:''}
-    </li>`;
-  }
-  html+='</ul>';
-  dom.fileTreeBody.innerHTML=html;
-}
-
-function formatSize(bytes){
-  if(bytes<1024)return bytes+' B';
-  if(bytes<1024*1024)return (bytes/1024).toFixed(1)+' KB';
-  return (bytes/1024/1024).toFixed(1)+' MB';
-}
-
-function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
+function fmtSize(b){return b<1024?b+' B':b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed(2)+' MB'}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
 // ==================== 文件选择 & 编辑 ====================
-window.selectFile=function(name){
-  const f=state.apkFiles.find(x=>x.name===name);
+window.sel=function(name){
+  const f=S.apkFiles.find(x=>x.name===name);
   if(!f||f.dir)return;
-  state.selectedFile=f;
-  dom.panelEditor.style.display='flex';
-  dom.editorFileName.textContent=f.name;
-  dom.editorFileSize.textContent=formatSize(f.size);
-
-  const modifiedData=state.apkModified[f.name];
-  const rawData=modifiedData||f.data;
-  if(!rawData){dom.fileEditor.value='[无法读取此文件]';renderFileTree();return;}
-
-  // 判断是否为文本文件
+  S.selFile=f;
+  D.pnlEdit.style.display='';
+  D.editName.textContent=f.name;
+  D.editSize.textContent=fmtSize(f.size);
+  const raw=S.apkMod[f.name]||f.data;
+  if(!raw){D.editor.value='[无法读取]';renderTree();return}
   const ext=f.name.split('.').pop()?.toLowerCase();
-  const textExts=new Set(['xml','txt','json','yml','yaml','properties','mf','sf','pro','smali','java','kt','gradle','cfg','ini','conf','csv','md','html','css','js','ts']);
-  if(textExts.has(ext)||f.name==='AndroidManifest.xml'||f.name.includes('META-INF')||f.name.includes('res/')){
-    const decoder=new TextDecoder('utf-8');
-    try{
-      let text=decoder.decode(rawData);
-      dom.fileEditor.value=text;
-      dom.fileEditor.style.display='block';
-    }catch(e){
-      dom.fileEditor.value='[二进制文件，无法直接编辑]';
-      dom.fileEditor.style.display='block';
-    }
-  }else if(ext==='png'||ext==='jpg'||ext==='jpeg'||ext==='gif'||ext==='webp'){
-    dom.fileEditor.value='[图片文件，当前版本不支持图片预览编辑]';
-    dom.fileEditor.style.display='block';
+  const txt=new Set(['xml','txt','json','yml','yaml','properties','mf','sf','pro','smali','java','kt','gradle','cfg','ini','conf','csv','md','html','css','js']);
+  if(txt.has(ext)||f.name==='AndroidManifest.xml'||f.name.includes('META-INF')||f.name.includes('res/')){
+    try{D.editor.value=new TextDecoder('utf-8').decode(raw)}catch(e){D.editor.value='[解码失败]'}
+  }else if(['png','jpg','jpeg','gif','webp'].includes(ext)){
+    D.editor.value='[图片 - 暂不支持预览编辑]';
   }else{
-    dom.fileEditor.value='[二进制文件，不支持直接编辑]';
-    dom.fileEditor.style.display='block';
+    D.editor.value='[二进制文件]';
   }
-  renderFileTree();
+  renderTree();
+  D.pnlEdit.scrollIntoView({behavior:'smooth'});
 };
-
-window.saveEditedFile=function(){
-  if(!state.selectedFile)return;
-  const newText=dom.fileEditor.value;
-  const encoder=new TextEncoder();
-  const newData=encoder.encode(newText);
-  state.apkModified[state.selectedFile.name]=newData;
-  state.apkDeleted.delete(state.selectedFile.name);
-  toast(`已保存修改: ${state.selectedFile.name}`,'success');
-  rebuildApk();
-  renderFileTree();
+window.saveEdit=function(){
+  if(!S.selFile)return;
+  S.apkMod[S.selFile.name]=new TextEncoder().encode(D.editor.value);
+  S.apkDel.delete(S.selFile.name);
+  rebuild();
+  toast('已保存: '+S.selFile.name,'ok');
+  renderTree();
 };
+window.closeEdit=function(){D.pnlEdit.style.display='none';S.selFile=null;renderTree()};
 
-window.closeEditor=function(){
-  dom.panelEditor.style.display='none';
-  state.selectedFile=null;
-  renderFileTree();
-};
-
-async function rebuildApk(){
-  if(!state.apkZip){return;}
-  const newZip=new JSZip();
-
-  for(const f of state.apkFiles){
-    if(state.apkDeleted.has(f.name))continue;
-    if(state.apkModified[f.name]){
-      newZip.file(f.name,state.apkModified[f.name]);
-    }else if(!f.dir&&f.data){
-      newZip.file(f.name,f.data);
-    }else if(f.dir){
-      newZip.folder(f.name);
-    }
+async function rebuild(){
+  if(!S.apkZip)return;
+  const nz=new JSZip();
+  for(const f of S.apkFiles){
+    if(S.apkDel.has(f.name))continue;
+    if(S.apkMod[f.name])nz.file(f.name,S.apkMod[f.name]);
+    else if(!f.dir&&f.data)nz.file(f.name,f.data);
+    else if(f.dir)nz.folder(f.name);
   }
-
-  const blob=await newZip.generateAsync({type:'blob',compression:'DEFLATE'});
-  state.modifiedApkBlob=blob;
-  dom.btnDownloadApk.disabled=false;
-  dom.btnUploadGitHub.disabled=false;
+  S.modBlob=await nz.generateAsync({type:'blob',compression:'DEFLATE'});
+  D.btnDL.disabled=false;D.btnGH.disabled=false;
 }
 
-// ==================== 下载修改后的 APK ====================
-window.downloadModifiedApk=function(){
-  if(!state.modifiedApkBlob){toast('请先修改 APK','error');return;}
-  const url=URL.createObjectURL(state.modifiedApkBlob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download='modified.apk';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  toast('下载已开始（未签名 APK，需自行签名）','success');
+window.downloadApk=function(){
+  if(!S.modBlob){toast('请先修改 APK','err');return}
+  const u=URL.createObjectURL(S.modBlob);
+  const a=document.createElement('a');a.href=u;a.download='modified.apk';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(u);
+  toast('下载开始（未签名 APK）','ok');
 };
 
 // ==================== AI 对话 ====================
-window.sendChat=async function(){
-  const input=dom.chatInput.value.trim();
-  if(!input)return;
-  dom.chatInput.value='';
-  dom.chatInput.disabled=true;
-  dom.chatSend.disabled=true;
+window.send=async function(){
+  const txt=D.chatInput.value.trim();
+  if(!txt)return;
+  D.chatInput.value='';D.chatInput.disabled=true;D.chatSend.disabled=true;
+  addMsg(txt,'user');
 
-  addChatMsg(input,'user');
-
-  let apkContext='';
-  if(state.apkZip){
-    const fileList=state.apkFiles.filter(f=>!f.dir).slice(0,40).map(f=>f.name).join(', ');
-    apkContext=`\n当前已加载 APK，包含以下文件（前40个）: ${fileList}`;
-    if(state.selectedFile){
-      apkContext+=`\n当前正在查看文件: ${state.selectedFile.name}`;
-    }
+  let ctx='';
+  if(S.apkZip){
+    const fl=S.apkFiles.filter(f=>!f.dir).slice(0,30).map(f=>f.name).join(', ');
+    ctx='\n当前 APK 文件列表: '+fl;
   }
 
   try{
-    let reply;
-    if(state.useLocalAPI){
-      reply=await chatLocalAPI(input,apkContext);
-    }else if(wllamaInstance){
-      reply=await chatWllama(input,apkContext);
-    }else{
-      reply='请先加载 GGUF 模型或连接本地 API。';
-    }
-    addChatMsg(reply,'assistant');
+    const msgs=[
+      {role:'system',content:'你是 APK 修改专家。简明扼要回答。'+ctx},
+      {role:'user',content:txt}
+    ];
+    const r=await fetch(S.apiBase+'/chat/completions',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({messages:msgs,temperature:0.7,max_tokens:512}),
+    });
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    addMsg(d.choices?.[0]?.message?.content||'[空回复]','assistant');
   }catch(e){
-    addChatMsg('错误: '+e.message,'assistant');
+    addMsg('错误: '+e.message,'assistant');
   }
-  dom.chatInput.disabled=false;
-  dom.chatSend.disabled=false;
-  dom.chatInput.focus();
+  D.chatInput.disabled=false;D.chatSend.disabled=false;D.chatInput.focus();
 };
 
-async function chatWllama(prompt,context){
-  const fullPrompt=`你是一个 APK 修改专家助手。${context}\n\n用户: ${prompt}\n\n助手:`;
-  const result=await wllamaInstance.createCompletion(fullPrompt,{
-    nPredict:512,
-    temperature:0.7,
-    topK:40,
-    topP:0.9,
-    stopStrings:['用户:','<|user|>','<|end|>'],
-  });
-  return result.trim();
-}
-
-async function chatLocalAPI(prompt,context){
-  const messages=[
-    {role:'system',content:`你是 APK 修改专家助手。${context}`},
-    {role:'user',content:prompt},
-  ];
-  const resp=await fetch(`${state.apiBaseUrl}/chat/completions`,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'local-model',messages,temperature:0.7,max_tokens:512}),
-  });
-  if(!resp.ok)throw new Error(`API 错误 ${resp.status}`);
-  const data=await resp.json();
-  return data.choices?.[0]?.message?.content||'[无回复]';
-}
-
-function addChatMsg(text,role){
-  const div=document.createElement('div');
-  div.className=`chat-msg ${role}`;
-  div.textContent=text;
-  dom.chatLog.appendChild(div);
-  dom.chatBody.scrollTop=dom.chatBody.scrollHeight;
-  state.chatHistory.push({role,content:text});
+function addMsg(t,r){
+  const d=document.createElement('div');
+  d.className='chat-msg '+r;d.textContent=t;
+  D.chatLog.appendChild(d);
+  D.chatLog.scrollTop=D.chatLog.scrollHeight;
 }
 
 // ==================== GitHub 上传 ====================
-window.uploadToGitHub=async function(){
-  const repo=dom.ghRepo.value.trim();
-  const token=dom.ghToken.value.trim();
-  const path=dom.ghPath.value.trim();
-  const branch=dom.ghBranch.value.trim()||'main';
-
-  if(!repo||!token||!path){toast('请填写仓库、Token 和目标路径','error');return;}
-  if(!state.modifiedApkBlob){toast('请先修改 APK','error');return;}
-
-  dom.btnUploadGitHub.disabled=true;
-  dom.btnUploadGitHub.textContent='上传中...';
-  dom.ghResult.innerHTML='';
-
+window.uploadGH=async function(){
+  const repo=D.ghRepo.value.trim(),token=D.ghToken.value.trim();
+  const path=D.ghPath.value.trim(),branch=D.ghBranch.value.trim()||'main';
+  if(!repo||!token||!path){toast('请填写仓库/Token/路径','err');return}
+  if(!S.modBlob){toast('请先修改 APK','err');return}
+  D.btnGH.disabled=true;D.btnGH.textContent='上传中...';
   try{
-    const buf=await state.modifiedApkBlob.arrayBuffer();
-    const base64=btoa(String.fromCharCode(...new Uint8Array(buf)));
+    const buf=await S.modBlob.arrayBuffer();
+    const b64=btoa(String.fromCharCode(...new Uint8Array(buf)));
 
-    // 先尝试获取文件 SHA（如果文件已存在需要提供）
     let sha=null;
     try{
-      const getResp=await fetch(`https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`,{
-        headers:{Authorization:`token ${token}`,Accept:'application/vnd.github.v3+json'},
-      });
-      if(getResp.ok){
-        const getData=await getResp.json();
-        sha=getData.sha;
-      }
-    }catch(e){/* 文件不存在，继续 */}
+      const gr=await fetch(`https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`,{headers:{Authorization:`token ${token}`}});
+      if(gr.ok){const gd=await gr.json();sha=gd.sha}
+    }catch(e){}
 
-    const body={message:`Update ${path}`,content:base64,branch:branch};
+    const body={message:`Update ${path}`,content:b64,branch};
     if(sha)body.sha=sha;
-
-    const resp=await fetch(`https://api.github.com/repos/${repo}/contents/${path}`,{
-      method:'PUT',
-      headers:{Authorization:`token ${token}`,Accept:'application/vnd.github.v3+json','Content-Type':'application/json'},
+    const r=await fetch(`https://api.github.com/repos/${repo}/contents/${path}`,{
+      method:'PUT',headers:{Authorization:`token ${token}`,Accept:'application/vnd.github.v3+json','Content-Type':'application/json'},
       body:JSON.stringify(body),
     });
-
-    const data=await resp.json();
-    if(resp.ok){
-      dom.ghResult.innerHTML=`<div class="gh-result success">上传成功！<br><a href="${data.content?.html_url||`https://github.com/${repo}/blob/${branch}/${path}`}" target="_blank" style="color:var(--accent)">查看文件 →</a></div>`;
-      toast('上传成功！','success');
+    const d=await r.json();
+    if(r.ok){
+      D.ghResult.innerHTML=`<div class="result ok">上传成功！<br><a href="${d.content?.html_url||`https://github.com/${repo}/blob/${branch}/${path}`}" target="_blank" style="color:var(--ac)">查看 →</a></div>`;
+      toast('上传成功','ok');
     }else{
-      dom.ghResult.innerHTML=`<div class="gh-result error">上传失败: ${data.message||resp.status}</div>`;
-      toast('上传失败: '+(data.message||resp.status),'error');
+      D.ghResult.innerHTML=`<div class="result err">${d.message||'HTTP '+r.status}</div>`;
+      toast('失败: '+(d.message||''),'err');
     }
-  }catch(e){
-    dom.ghResult.innerHTML=`<div class="gh-result error">网络错误: ${e.message}</div>`;
-    toast('网络错误','error');
-  }
-  dom.btnUploadGitHub.disabled=false;
-  dom.btnUploadGitHub.textContent='⬆ 上传修改后的 APK 到 GitHub';
+  }catch(e){D.ghResult.innerHTML=`<div class="result err">${e.message}</div>`;toast('网络错误','err')}
+  D.btnGH.disabled=false;D.btnGH.textContent='上传到 GitHub';
 };
 
-// ==================== 事件绑定 ====================
-function setupDropZone(el,fileInput,onFile){
-  el.addEventListener('click',()=>fileInput.click());
-  el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drag-over')});
-  el.addEventListener('dragleave',()=>el.classList.remove('drag-over'));
-  el.addEventListener('drop',e=>{
-    e.preventDefault();
-    el.classList.remove('drag-over');
-    const file=e.dataTransfer.files[0];
-    if(file)onFile(file);
-  });
-  fileInput.addEventListener('change',e=>{
-    const file=e.target.files[0];
-    if(file)onFile(file);
-    fileInput.value='';
-  });
-}
-
-setupDropZone(dom.dropModel,dom.modelFileInput,file=>{
-  if(!file.name.endsWith('.gguf')){toast('请选择 .gguf 模型文件','error');return;}
-  loadGGUFModel(file);
-});
-
-setupDropZone(dom.dropApk,dom.apkFileInput,file=>{
-  const ext=file.name.split('.').pop()?.toLowerCase();
-  if(!['apk','xapk','apks','zip'].includes(ext)){toast('请选择 .apk / .xapk / .apks 文件','error');return;}
-  loadAPK(file);
-});
-
-// 回车发送
-dom.chatInput.addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&!e.shiftKey){
-    e.preventDefault();
-    if(!dom.chatSend.disabled)sendChat();
+// ==================== 拖放绑定 ====================
+(function(){
+  function dz(el,inp,fn){
+    el.addEventListener('click',()=>inp.click());
+    el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drag')});
+    el.addEventListener('dragleave',()=>el.classList.remove('drag'));
+    el.addEventListener('drop',e=>{e.preventDefault();el.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)fn(f)});
+    inp.addEventListener('change',e=>{const f=e.target.files[0];if(f)fn(f);inp.value=''});
   }
-});
-
-// ==================== 初始化 ====================
-console.log('APK AI Studio 已就绪');
-console.log('功能: 本地 GGUF 模型 | APK 编辑 | GitHub 上传');
-console.log('使用方法: 1.拖入 .gguf 模型  2.拖入 .apk 文件  3.对话修改  4.上传');
+  dz(D.dropApk,D.apkInput,f=>{
+    const ext=f.name.split('.').pop()?.toLowerCase();
+    if(!['apk','xapk','apks','zip'].includes(ext)){toast('请选择 .apk 文件','err');return}
+    loadAPK(f);
+  });
+  D.chatInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(!D.chatSend.disabled)send()}});
+})();
 </script>
 </body>
 </html>
